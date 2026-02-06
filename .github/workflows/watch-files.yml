@@ -1,9 +1,9 @@
-name: Watch test repo README and notify Slack
+name: Watch multiple upstream files and notify Slack
 
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "*/10 * * * *"  # every 10 minutes (UTC)
+    - cron: "*/15 * * * *"   # every 15 minutes (UTC)
 
 permissions:
   contents: write
@@ -12,96 +12,28 @@ jobs:
   watch:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        watch:
+          # --- Your test repo file ---
+          - id: bug_free_potato_readme
+            repo: raventaylor-debug/bug-free-potato
+            branch: main
+            path: README.md
+
+          # --- TruffleHog example ---
+          - id: trufflehog_github_go
+            repo: trufflesecurity/trufflehog
+            branch: main
+            path: pkg/detectors/github/v2/github.go
+
+          # --- Add more entries like this ---
+          # - id: gitleaks_config
+          #   repo: gitleaks/gitleaks
+          #   branch: main
+          #   path: config/gitleaks.toml
+
     steps:
       - name: Checkout watcher repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Fetch upstream file + hash it
-        id: upstream
-        env:
-          RAW_URL: "https://raw.githubusercontent.com/raventaylor-debug/bug-free-potato/main/README.md"
-        run: |
-          set -euo pipefail
-          curl -fsSL "$RAW_URL" -o target_file
-          HASH="$(sha256sum target_file | awk '{print $1}')"
-          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
-          echo "raw_url=$RAW_URL" >> "$GITHUB_OUTPUT"
-
-      - name: Read last saved hash
-        id: last
-        run: |
-          set -euo pipefail
-          STATE_FILE=".watch_state/bug_free_potato_readme.sha256"
-          if [ -f "$STATE_FILE" ]; then
-            LAST="$(cat "$STATE_FILE")"
-          else
-            LAST=""
-          fi
-          echo "state_file=$STATE_FILE" >> "$GITHUB_OUTPUT"
-          echo "last=$LAST" >> "$GITHUB_OUTPUT"
-
-      - name: Notify + update state if changed
-        if: steps.upstream.outputs.hash != steps.last.outputs.last
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          NEW_HASH: ${{ steps.upstream.outputs.hash }}
-          RAW_URL: ${{ steps.upstream.outputs.raw_url }}
-          REPO: ${{ matrix.watch.repo }}
-          BRANCH: ${{ matrix.watch.branch }}
-          FILE_PATH: ${{ matrix.watch.path }}
-          STATE_FILE: ${{ steps.last.outputs.state_file }}
-        run: |
-          set -euo pipefail
-
-          mkdir -p .watch_state
-          echo "$NEW_HASH" > "$STATE_FILE"
-
-          FILE_UI_URL="https://github.com/${REPO}/blob/${BRANCH}/${FILE_PATH}"
-
-          # Build JSON safely (avoids broken payloads)
-          python3 - <<'PY' > payload.json
-    import json, os
-    payload = {
-      "text": "🔔 Upstream file changed",
-      "attachments": [
-        {
-          "title": f"{os.environ['REPO']}: {os.environ['FILE_PATH']}",
-          "title_link": os.environ["FILE_UI_URL"],
-          "fields": [
-            {"title": "Branch", "value": os.environ["BRANCH"], "short": True},
-            {"title": "SHA256", "value": os.environ["NEW_HASH"], "short": True},
-          ],
-          "footer": "repo-watch"
-        }
-      ]
-    }
-    print(json.dumps(payload))
-    PY
-
-        # Export FILE_UI_URL for the python snippet above
-        export FILE_UI_URL
-
-        # Post to Slack + print response for debugging
-        HTTP_CODE=$(curl -sS -o /tmp/slack_resp.txt -w "%{http_code}" \
-          -X POST -H 'Content-type: application/json' \
-          --data @payload.json \
-          "$SLACK_WEBHOOK_URL" || true)
-
-        echo "Slack HTTP status: $HTTP_CODE"
-        echo "Slack response:"
-        cat /tmp/slack_resp.txt
-        echo
-
-        # Fail the run if Slack rejected it
-        if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-          exit 1
-        fi
-
-        # Save updated state back to this watcher repo
-        git config user.name "repo-watch-bot"
-        git config user.email "repo-watch-bot@users.noreply.github.com"
-        git add "$STATE_FILE"
-        git commit -m "Update watch state: ${REPO}/${FILE_PATH}" || exit 0
-        git push
+        uses: actions/checkout@
