@@ -1,4 +1,4 @@
-name: Watch multiple upstream files and notify Slack
+name: Watch multiple files and notify Slack
 
 on:
   workflow_dispatch: {}
@@ -22,17 +22,17 @@ jobs:
             branch: main
             path: README.md
 
-          # --- TruffleHog example ---
+          # --- TruffleHog file ---
           - id: trufflehog_github_go
             repo: trufflesecurity/trufflehog
             branch: main
             path: pkg/detectors/github/v2/github.go
 
-          # --- Add more entries like this ---
-          # - id: gitleaks_config
+          # --- Add more like this ---
+          # - id: gitleaks_some_file
           #   repo: gitleaks/gitleaks
           #   branch: main
-          #   path: config/gitleaks.toml
+          #   path: path/to/file.ext
 
     steps:
       - name: Checkout watcher repo
@@ -40,7 +40,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch upstream file and compute hash
+      - name: Fetch upstream file + hash it
         id: upstream
         env:
           REPO: ${{ matrix.watch.repo }}
@@ -49,11 +49,10 @@ jobs:
         run: |
           set -euo pipefail
           RAW_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}/${FILE_PATH}"
-          echo "Fetching: $RAW_URL"
           curl -fsSL "$RAW_URL" -o target_file
           HASH="$(sha256sum target_file | awk '{print $1}')"
-          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
           echo "raw_url=$RAW_URL" >> "$GITHUB_OUTPUT"
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
 
       - name: Read last saved hash
         id: last
@@ -69,7 +68,7 @@ jobs:
           echo "last=$LAST" >> "$GITHUB_OUTPUT"
           echo "state_file=$STATE_FILE" >> "$GITHUB_OUTPUT"
 
-      - name: Notify Slack and update state if changed
+      - name: Notify + update state if changed
         if: steps.upstream.outputs.hash != steps.last.outputs.last
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -87,45 +86,14 @@ jobs:
 
           FILE_UI_URL="https://github.com/${REPO}/blob/${BRANCH}/${FILE_PATH}"
 
-          # Build JSON safely using Python
-          export FILE_UI_URL
-          python3 - <<'PY' > payload.json
-import json, os
+          payload=$(cat <<EOF
+          {
+            "text": "🔔 File changed\n• Repo: ${REPO}\n• File: ${FILE_PATH}\n• Branch: ${BRANCH}\n• Link: ${FILE_UI_URL}\n• Raw: ${RAW_URL}\n• New SHA256: ${NEW_HASH}"
+          }
+          EOF
+          )
+          curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
 
-payload = {
-  "text": "🔔 Upstream file changed",
-  "attachments": [
-    {
-      "title": f"{os.environ['REPO']}: {os.environ['FILE_PATH']}",
-      "title_link": os.environ["FILE_UI_URL"],
-      "fields": [
-        {"title": "Branch", "value": os.environ["BRANCH"], "short": True},
-        {"title": "SHA256", "value": os.environ["NEW_HASH"], "short": True},
-      ],
-      "footer": "repo-watch"
-    }
-  ]
-}
-
-print(json.dumps(payload))
-PY
-
-          # Post to Slack and print response for debugging
-          HTTP_CODE=$(curl -sS -o /tmp/slack_resp.txt -w "%{http_code}" \
-            -X POST -H 'Content-type: application/json' \
-            --data @payload.json \
-            "$SLACK_WEBHOOK_URL" || true)
-
-          echo "Slack HTTP status: $HTTP_CODE"
-          echo "Slack response:"
-          cat /tmp/slack_resp.txt
-          echo
-
-          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-            exit 1
-          fi
-
-          # Commit updated state
           git config user.name "repo-watch-bot"
           git config user.email "repo-watch-bot@users.noreply.github.com"
           git add "$STATE_FILE"
