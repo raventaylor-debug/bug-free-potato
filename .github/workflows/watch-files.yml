@@ -36,4 +36,98 @@ jobs:
 
     steps:
       - name: Checkout watcher repo
-        uses: actions/checkout@
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch upstream file and compute hash
+        id: upstream
+        env:
+          REPO: ${{ matrix.watch.repo }}
+          BRANCH: ${{ matrix.watch.branch }}
+          FILE_PATH: ${{ matrix.watch.path }}
+        run: |
+          set -euo pipefail
+          RAW_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}/${FILE_PATH}"
+          echo "Fetching: $RAW_URL"
+          curl -fsSL "$RAW_URL" -o target_file
+          HASH="$(sha256sum target_file | awk '{print $1}')"
+          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+          echo "raw_url=$RAW_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Read last saved hash
+        id: last
+        env:
+          STATE_FILE: .watch_state/${{ matrix.watch.id }}.sha256
+        run: |
+          set -euo pipefail
+          if [ -f "$STATE_FILE" ]; then
+            LAST="$(cat "$STATE_FILE")"
+          else
+            LAST=""
+          fi
+          echo "last=$LAST" >> "$GITHUB_OUTPUT"
+          echo "state_file=$STATE_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Notify Slack and update state if changed
+        if: steps.upstream.outputs.hash != steps.last.outputs.last
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          NEW_HASH: ${{ steps.upstream.outputs.hash }}
+          RAW_URL: ${{ steps.upstream.outputs.raw_url }}
+          REPO: ${{ matrix.watch.repo }}
+          BRANCH: ${{ matrix.watch.branch }}
+          FILE_PATH: ${{ matrix.watch.path }}
+          STATE_FILE: ${{ steps.last.outputs.state_file }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p .watch_state
+          echo "$NEW_HASH" > "$STATE_FILE"
+
+          FILE_UI_URL="https://github.com/${REPO}/blob/${BRANCH}/${FILE_PATH}"
+
+          # Build JSON safely using Python
+          export FILE_UI_URL
+          python3 - <<'PY' > payload.json
+import json, os
+
+payload = {
+  "text": "🔔 Upstream file changed",
+  "attachments": [
+    {
+      "title": f"{os.environ['REPO']}: {os.environ['FILE_PATH']}",
+      "title_link": os.environ["FILE_UI_URL"],
+      "fields": [
+        {"title": "Branch", "value": os.environ["BRANCH"], "short": True},
+        {"title": "SHA256", "value": os.environ["NEW_HASH"], "short": True},
+      ],
+      "footer": "repo-watch"
+    }
+  ]
+}
+
+print(json.dumps(payload))
+PY
+
+          # Post to Slack and print response for debugging
+          HTTP_CODE=$(curl -sS -o /tmp/slack_resp.txt -w "%{http_code}" \
+            -X POST -H 'Content-type: application/json' \
+            --data @payload.json \
+            "$SLACK_WEBHOOK_URL" || true)
+
+          echo "Slack HTTP status: $HTTP_CODE"
+          echo "Slack response:"
+          cat /tmp/slack_resp.txt
+          echo
+
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            exit 1
+          fi
+
+          # Commit updated state
+          git config user.name "repo-watch-bot"
+          git config user.email "repo-watch-bot@users.noreply.github.com"
+          git add "$STATE_FILE"
+          git commit -m "Update watch state: ${REPO}/${FILE_PATH}" || exit 0
+          git push
