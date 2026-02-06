@@ -58,7 +58,18 @@ jobs:
 
           payload=$(cat <<EOF
           {
-            "text": "🔔 README changed in bug-free-potato\n• File: ${FILE_UI_URL}\n• Raw: ${RAW_URL}\n• New SHA256: ${NEW_HASH}"
+            "text": "🔔 Upstream file changed",
+            "attachments": [
+              {
+                "title": "${REPO}: ${FILE_PATH}",
+                "title_link": "${FILE_UI_URL}",
+                "fields": [
+                  { "title": "Branch", "value": "${BRANCH}", "short": true },
+                  { "title": "SHA256", "value": "${NEW_HASH}", "short": true }
+                ],
+                "footer": "repo-watch"
+              }
+            ]
           }
           EOF
           )
