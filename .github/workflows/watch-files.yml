@@ -23,16 +23,49 @@ jobs:
             path: README.md
 
           # --- TruffleHog file ---
-          - id: trufflehog_github_go
+          - id: trufflehog_github
             repo: trufflesecurity/trufflehog
             branch: main
             path: pkg/detectors/github/v2/github.go
 
-          # --- Add more like this ---
-          # - id: gitleaks_some_file
-          #   repo: gitleaks/gitleaks
-          #   branch: main
-          #   path: path/to/file.ext
+          # --- Tableau Personal Access Tokens ---
+          - id: trufflehog_tableau
+            repo: trufflesecurity/trufflehog
+            branch: main
+            path: pkg/detectors/tableau/tableau.go
+
+          # --- Heroku API Keys ---
+          - id: trufflehog_heroku
+            repo: trufflesecurity/trufflehog
+            branch: main
+            path: pkg/detectors/heroku/v2/heroku.go
+
+          - id: gitleaks_heroku
+            repo: gitleaks/gitleaks
+            branch: main
+            path: cmd/generate/config/rules/heroku.go
+
+          # --- AWS Access Keys ---
+          - id: trufflehog_aws
+            repo: trufflesecurity/trufflehog
+            branch: main
+            path: pkg/detectors/aws/access_keys/accesskey.go
+
+          - id: gitleaks_aws
+            repo: gitleaks/gitleaks
+            branch: main
+            path: cmd/generate/config/rules/aws.go
+
+          # --- Azure Client Secret IDs ---
+          - id: trufflehog_azure
+            repo: trufflesecurity/trufflehog
+            branch: main
+            path: pkg/detectors/azure_entra/common.go
+
+          # --- Google Cloud API Keys ---
+          
+
+           # --- Example of a file that doesn't exist (to test error handling) ---
 
     steps:
       - name: Checkout watcher repo
