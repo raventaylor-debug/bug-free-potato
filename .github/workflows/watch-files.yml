@@ -64,12 +64,6 @@ jobs:
 
           # # --- Google Cloud API Keys ---
           # # couldn't find a specific file for this, adding for tracking purposes but may need to update in the future
-
-          # # --- GitHub Personal Access Tokens ---
-          - id: trufflehog_github
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/github/v2/github.go
           
           # # --- Okta API Tokens ---
           - id: trufflehog_okta
