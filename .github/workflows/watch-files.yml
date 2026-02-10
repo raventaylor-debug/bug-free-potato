@@ -3,7 +3,7 @@ name: Watch multiple files and notify Slack
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "*/15 * * * *"   # every 15 minutes (UTC)
+    - cron: "*/15 * * * *"   # every 15 minutes
 
 permissions:
   contents: write
@@ -22,104 +22,104 @@ jobs:
             branch: main
             path: README.md
 
-          # --- TruffleHog file ---
-          - id: trufflehog_github
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/github/v2/github.go
+          # # --- TruffleHog file ---
+          # - id: trufflehog_github
+          #   repo: trufflesecurity/trufflehog
+          #   branch: main
+          #   path: pkg/detectors/github/v2/github.go
 
-          # --- Tableau Personal Access Tokens ---
-          - id: trufflehog_tableau
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/tableau/tableau.go
+          # # --- Tableau Personal Access Tokens ---
+          # - id: trufflehog_tableau
+          #   repo: trufflesecurity/trufflehog
+          #   branch: main
+          #   path: pkg/detectors/tableau/tableau.go
 
-          # --- Heroku API Keys ---
-          - id: trufflehog_heroku
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/heroku/v2/heroku.go
+          # # --- Heroku API Keys ---
+          # - id: trufflehog_heroku
+          #   repo: trufflesecurity/trufflehog
+          #   branch: main
+          #   path: pkg/detectors/heroku/v2/heroku.go
 
-          - id: gitleaks_heroku
-            repo: gitleaks/gitleaks
-            branch: main
-            path: cmd/generate/config/rules/heroku.go
+          # - id: gitleaks_heroku
+          #   repo: gitleaks/gitleaks
+          #   branch: main
+          #   path: cmd/generate/config/rules/heroku.go
 
-          # --- AWS Access Keys ---
-          - id: trufflehog_aws
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/aws/access_keys/accesskey.go
+          # # --- AWS Access Keys ---
+          # - id: trufflehog_aws
+          #   repo: trufflesecurity/trufflehog
+          #   branch: main
+          #   path: pkg/detectors/aws/access_keys/accesskey.go
 
-          - id: gitleaks_aws
-            repo: gitleaks/gitleaks
-            branch: main
-            path: cmd/generate/config/rules/aws.go
+          # - id: gitleaks_aws
+          #   repo: gitleaks/gitleaks
+          #   branch: main
+          #   path: cmd/generate/config/rules/aws.go
 
-          # --- Azure Client Secret IDs ---
-          - id: trufflehog_azure
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/azure_entra/common.go
+          # # --- Azure Client Secret IDs ---
+          # - id: trufflehog_azure
+          #   repo: trufflesecurity/trufflehog
+          #   branch: main
+          #   path: pkg/detectors/azure_entra/common.go
 
-          # --- Google Cloud API Keys ---
-          # couldn't find a specific file for this, adding for tracking purposes but may need to update in the future
+          # # --- Google Cloud API Keys ---
+          # # couldn't find a specific file for this, adding for tracking purposes but may need to update in the future
 
-          # --- GitHub Personal Access Tokens ---
-          - id: trufflehog_github
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/github/v2/github.go
+          # # --- GitHub Personal Access Tokens ---
+          # - id: trufflehog_github
+          #   repo: trufflesecurity/trufflehog
+          #   branch: main
+          #   path: pkg/detectors/github/v2/github.go
           
-          # --- Okta API Tokens ---
-          - id: trufflehog_okta
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/okta/okta.go
+          # # --- Okta API Tokens ---
+          # - id: trufflehog_okta
+          #   repo: trufflesecurity/trufflehog
+          #   branch: main
+          #   path: pkg/detectors/okta/okta.go
 
-          - id: gitleaks_okta
-            repo: gitleaks/gitleaks
-            branch: main
-            path: cmd/generate/config/rules/okta.go
+          # - id: gitleaks_okta
+          #   repo: gitleaks/gitleaks
+          #   branch: main
+          #   path: cmd/generate/config/rules/okta.go
           
-          # --- Paypal Client IDs and Secrets ---
-          - id: trufflehog_paypal
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/paypaloauth/paypaloauth.go
+          # # --- Paypal Client IDs and Secrets ---
+          # - id: trufflehog_paypal
+          #   repo: trufflesecurity/trufflehog
+          #   branch: main
+          #   path: pkg/detectors/paypaloauth/paypaloauth.go
 
-          # --- Stripe API Keys ---
-          - id: trufflehog_stripe_secret_key
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/stripe/stripe.go
+          # # --- Stripe API Keys ---
+          # - id: trufflehog_stripe_secret_key
+          #   repo: trufflesecurity/trufflehog
+          #   branch: main
+          #   path: pkg/detectors/stripe/stripe.go
 
-          - id: trufflehog_stripe_client_secret
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/stripepaymentintent/stripepaymentintent.go
+          # - id: trufflehog_stripe_client_secret
+          #   repo: trufflesecurity/trufflehog
+          #   branch: main
+          #   path: pkg/detectors/stripepaymentintent/stripepaymentintent.go
           
-          - id: gitleaks_stripe
-            repo: gitleaks/gitleaks
-            branch: main
-            path: cmd/generate/config/rules/stripe.go
+          # - id: gitleaks_stripe
+          #   repo: gitleaks/gitleaks
+          #   branch: main
+          #   path: cmd/generate/config/rules/stripe.go
           
 
-          # --- Open AI API Keys ---
-          - id: trufflehog_openai
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/openai/openai.go
+          # # --- Open AI API Keys ---
+          # - id: trufflehog_openai
+          #   repo: trufflesecurity/trufflehog
+          #   branch: main
+          #   path: pkg/detectors/openai/openai.go
           
-          - id: gitleaks_openai
-            repo: gitleaks/gitleaks
-            branch: main
-            path: cmd/generate/config/rules/openai.go
+          # - id: gitleaks_openai
+          #   repo: gitleaks/gitleaks
+          #   branch: main
+          #   path: cmd/generate/config/rules/openai.go
 
-          # --- Claude (Anthropic) API Keys ---
-          - id: trufflehog_claude
-            repo: trufflesecurity/trufflehog
-            branch: main
+          # # --- Claude (Anthropic) API Keys ---
+          # - id: trufflehog_claude
+          #   repo: trufflesecurity/trufflehog
+          #   branch: main
 
            # --- Add an example of a file that doesn't exist (to test error handling) ---
 
