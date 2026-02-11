@@ -1,12 +1,9 @@
-name: Watch multiple files and notify Slack
+name: Watch Gitleaks and TruffleHog Files Referenced in #dlp-secret-scanning
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch: {} # Allow manual triggering from the Actions tab
   schedule:
-    - cron: "*/15 * * * *"   # every 15 minutes
-
-permissions:
-  contents: write
+    - cron: "0 10 1 2,4,6,8,12 *" # Run on the 1st of every even month at 10:00 UTC
 
 jobs:
   watch:
