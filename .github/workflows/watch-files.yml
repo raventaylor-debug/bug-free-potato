@@ -40,10 +40,10 @@ jobs:
             branch: main
             path: pkg/detectors/heroku/v2/heroku.go
 
-          # - id: gitleaks_heroku
-          #   repo: gitleaks/gitleaks
-          #   branch: main
-          #   path: cmd/generate/config/rules/heroku.go
+          - id: gitleaks_heroku
+            repo: gitleaks/gitleaks
+            branch: main
+            path: cmd/generate/config/rules/heroku.go
 
           # --- AWS Access Keys ---
           - id: trufflehog_aws
@@ -51,10 +51,10 @@ jobs:
             branch: main
             path: pkg/detectors/aws/access_keys/accesskey.go
 
-          # - id: gitleaks_aws
-          #   repo: gitleaks/gitleaks
-          #   branch: main
-          #   path: cmd/generate/config/rules/aws.go
+          - id: gitleaks_aws
+            repo: gitleaks/gitleaks
+            branch: main
+            path: cmd/generate/config/rules/aws.go
 
           # --- Azure Client Secret IDs ---
           - id: trufflehog_azure
@@ -71,10 +71,10 @@ jobs:
             branch: main
             path: pkg/detectors/okta/okta.go
 
-          # - id: gitleaks_okta
-          #   repo: gitleaks/gitleaks
-          #   branch: main
-          #   path: cmd/generate/config/rules/okta.go
+          - id: gitleaks_okta
+            repo: gitleaks/gitleaks
+            branch: main
+            path: cmd/generate/config/rules/okta.go
           
           # # --- Paypal Client IDs and Secrets ---
           - id: trufflehog_paypal
@@ -93,10 +93,10 @@ jobs:
             branch: main
             path: pkg/detectors/stripepaymentintent/stripepaymentintent.go
           
-          # - id: gitleaks_stripe
-          #   repo: gitleaks/gitleaks
-          #   branch: main
-          #   path: cmd/generate/config/rules/stripe.go
+          - id: gitleaks_stripe
+            repo: gitleaks/gitleaks
+            branch: main
+            path: cmd/generate/config/rules/stripe.go
           
 
           # # --- Open AI API Keys ---
@@ -105,10 +105,10 @@ jobs:
             branch: main
             path: pkg/detectors/openai/openai.go
           
-          # - id: gitleaks_openai
-          #   repo: gitleaks/gitleaks
-          #   branch: main
-          #   path: cmd/generate/config/rules/openai.go
+          - id: gitleaks_openai
+            repo: gitleaks/gitleaks
+            branch: main
+            path: cmd/generate/config/rules/openai.go
 
           # # --- Claude (Anthropic) API Keys ---
           # - id: trufflehog_claude
