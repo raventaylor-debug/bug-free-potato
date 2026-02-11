@@ -42,7 +42,7 @@ jobs:
 
           - id: gitleaks_heroku
             repo: gitleaks/gitleaks
-            branch: main
+            branch: master
             path: cmd/generate/config/rules/heroku.go
 
           # --- AWS Access Keys ---
@@ -53,7 +53,7 @@ jobs:
 
           - id: gitleaks_aws
             repo: gitleaks/gitleaks
-            branch: main
+            branch: master
             path: cmd/generate/config/rules/aws.go
 
           # --- Azure Client Secret IDs ---
@@ -73,7 +73,7 @@ jobs:
 
           - id: gitleaks_okta
             repo: gitleaks/gitleaks
-            branch: main
+            branch: master
             path: cmd/generate/config/rules/okta.go
           
           # # --- Paypal Client IDs and Secrets ---
@@ -95,7 +95,7 @@ jobs:
           
           - id: gitleaks_stripe
             repo: gitleaks/gitleaks
-            branch: main
+            branch: master
             path: cmd/generate/config/rules/stripe.go
           
 
@@ -107,7 +107,7 @@ jobs:
           
           - id: gitleaks_openai
             repo: gitleaks/gitleaks
-            branch: main
+            branch: master
             path: cmd/generate/config/rules/openai.go
 
           # # --- Claude (Anthropic) API Keys ---
