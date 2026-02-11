@@ -1,192 +1,191 @@
 name: Watch Gitleaks and TruffleHog Files Referenced in #dlp-secret-scanning
 
 on:
-  workflow_dispatch: {} # Allow manual triggering from the Actions tab
+  workflow_dispatch: {} # Allow manual triggering from the Github Actions tab
   schedule:
     - cron: "0 10 1 2,4,6,8,12 *" # Run on the 1st of every even month at 10:00 UTC
 
 jobs:
-  watch:
-    runs-on: ubuntu-latest
+  runs-on: ubuntu-latest # why do we use ubuntu-latest?
 
-    strategy:
-      fail-fast: false
-      matrix:
-        watch:
-          # --- Your test repo file ---
-          - id: bug_free_potato_readme
-            repo: raventaylor-debug/bug-free-potato
-            branch: main
-            path: README.md
+  strategy:
+    fail-fast: false
+    matrix:
+      watch:
+        # --- Your test repo file ---
+        - id: bug_free_potato_readme
+          repo: raventaylor-debug/bug-free-potato
+          branch: main
+          path: README.md
 
-          # --- TruffleHog file ---
-          - id: trufflehog_github
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/github/v2/github.go
+        # --- TruffleHog file ---
+        - id: trufflehog_github
+          repo: trufflesecurity/trufflehog
+          branch: main
+          path: pkg/detectors/github/v2/github.go
 
-          # --- Tableau Personal Access Tokens ---
-          - id: trufflehog_tableau
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/tableau/tableau.go
+        # --- Tableau Personal Access Tokens ---
+        - id: trufflehog_tableau
+          repo: trufflesecurity/trufflehog
+          branch: main
+          path: pkg/detectors/tableau/tableau.go
 
-          # --- Heroku API Keys ---
-          - id: trufflehog_heroku
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/heroku/v2/heroku.go
+        # --- Heroku API Keys ---
+        - id: trufflehog_heroku
+          repo: trufflesecurity/trufflehog
+          branch: main
+          path: pkg/detectors/heroku/v2/heroku.go
 
-          - id: gitleaks_heroku
-            repo: gitleaks/gitleaks
-            branch: master
-            path: cmd/generate/config/rules/heroku.go
+        - id: gitleaks_heroku
+          repo: gitleaks/gitleaks
+          branch: master
+          path: cmd/generate/config/rules/heroku.go
 
-          # --- AWS Access Keys ---
-          - id: trufflehog_aws
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/aws/access_keys/accesskey.go
+        # --- AWS Access Keys ---
+        - id: trufflehog_aws
+          repo: trufflesecurity/trufflehog
+          branch: main
+          path: pkg/detectors/aws/access_keys/accesskey.go
 
-          - id: gitleaks_aws
-            repo: gitleaks/gitleaks
-            branch: master
-            path: cmd/generate/config/rules/aws.go
+        - id: gitleaks_aws
+          repo: gitleaks/gitleaks
+          branch: master
+          path: cmd/generate/config/rules/aws.go
 
-          # --- Azure Client Secret IDs ---
-          - id: trufflehog_azure
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/azure_entra/common.go
+        # --- Azure Client Secret IDs ---
+        - id: trufflehog_azure
+          repo: trufflesecurity/trufflehog
+          branch: main
+          path: pkg/detectors/azure_entra/common.go
 
-          # # --- Google Cloud API Keys ---
-          # # couldn't find a specific file for this, adding for tracking purposes but may need to update in the future
-          
-          # # --- Okta API Tokens ---
-          - id: trufflehog_okta
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/okta/okta.go
+        # # --- Google Cloud API Keys ---
+        # # couldn't find a specific file for this, adding for tracking purposes but may need to update in the future
+        
+        # # --- Okta API Tokens ---
+        - id: trufflehog_okta
+          repo: trufflesecurity/trufflehog
+          branch: main
+          path: pkg/detectors/okta/okta.go
 
-          - id: gitleaks_okta
-            repo: gitleaks/gitleaks
-            branch: master
-            path: cmd/generate/config/rules/okta.go
-          
-          # # --- Paypal Client IDs and Secrets ---
-          - id: trufflehog_paypal
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/paypaloauth/paypaloauth.go
+        - id: gitleaks_okta
+          repo: gitleaks/gitleaks
+          branch: master
+          path: cmd/generate/config/rules/okta.go
+        
+        # # --- Paypal Client IDs and Secrets ---
+        - id: trufflehog_paypal
+          repo: trufflesecurity/trufflehog
+          branch: main
+          path: pkg/detectors/paypaloauth/paypaloauth.go
 
-          # # --- Stripe API Keys ---
-          - id: trufflehog_stripe_secret_key
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/stripe/stripe.go
+        # # --- Stripe API Keys ---
+        - id: trufflehog_stripe_secret_key
+          repo: trufflesecurity/trufflehog
+          branch: main
+          path: pkg/detectors/stripe/stripe.go
 
-          - id: trufflehog_stripe_client_secret
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/stripepaymentintent/stripepaymentintent.go
-          
-          - id: gitleaks_stripe
-            repo: gitleaks/gitleaks
-            branch: master
-            path: cmd/generate/config/rules/stripe.go
-          
+        - id: trufflehog_stripe_client_secret
+          repo: trufflesecurity/trufflehog
+          branch: main
+          path: pkg/detectors/stripepaymentintent/stripepaymentintent.go
+        
+        - id: gitleaks_stripe
+          repo: gitleaks/gitleaks
+          branch: master
+          path: cmd/generate/config/rules/stripe.go
+        
 
-          # # --- Open AI API Keys ---
-          - id: trufflehog_openai
-            repo: trufflesecurity/trufflehog
-            branch: main
-            path: pkg/detectors/openai/openai.go
-          
-          - id: gitleaks_openai
-            repo: gitleaks/gitleaks
-            branch: master
-            path: cmd/generate/config/rules/openai.go
+        # # --- Open AI API Keys ---
+        - id: trufflehog_openai
+          repo: trufflesecurity/trufflehog
+          branch: main
+          path: pkg/detectors/openai/openai.go
+        
+        - id: gitleaks_openai
+          repo: gitleaks/gitleaks
+          branch: master
+          path: cmd/generate/config/rules/openai.go
 
-          # # --- Claude (Anthropic) API Keys ---
-          # - id: trufflehog_claude
-          #   repo: trufflesecurity/trufflehog
-          #   branch: main
+        # # --- Claude (Anthropic) API Keys ---
+        # - id: trufflehog_claude
+        #   repo: trufflesecurity/trufflehog
+        #   branch: main
 
-           # --- Add an example of a file that doesn't exist (to test error handling) ---
+          # --- Add an example of a file that doesn't exist (to test error handling) ---
 
-    steps:
-      - name: Checkout watcher repo
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  steps:
+    - name: Checkout watcher repo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: Fetch upstream file + hash it
-        id: upstream
-        env:
-          REPO: ${{ matrix.watch.repo }}
-          BRANCH: ${{ matrix.watch.branch }}
-          FILE_PATH: ${{ matrix.watch.path }}
-        run: |
-          set -euo pipefail
-          RAW_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}/${FILE_PATH}"
-          curl -fsSL "$RAW_URL" -o target_file
-          HASH="$(sha256sum target_file | awk '{print $1}')"
-          echo "raw_url=$RAW_URL" >> "$GITHUB_OUTPUT"
-          echo "hash=$HASH" >> "$GITHUB_OUTPUT"
+    - name: Fetch upstream file + hash it
+      id: upstream
+      env:
+        REPO: ${{ matrix.watch.repo }}
+        BRANCH: ${{ matrix.watch.branch }}
+        FILE_PATH: ${{ matrix.watch.path }}
+      run: |
+        set -euo pipefail
+        RAW_URL="https://raw.githubusercontent.com/${REPO}/${BRANCH}/${FILE_PATH}"
+        curl -fsSL "$RAW_URL" -o target_file
+        HASH="$(sha256sum target_file | awk '{print $1}')"
+        echo "raw_url=$RAW_URL" >> "$GITHUB_OUTPUT"
+        echo "hash=$HASH" >> "$GITHUB_OUTPUT"
 
-      - name: Read last saved hash
-        id: last
-        env:
-          STATE_FILE: .watch_state/${{ matrix.watch.id }}.sha256
-        run: |
-          set -euo pipefail
-          if [ -f "$STATE_FILE" ]; then
-            LAST="$(cat "$STATE_FILE")"
-          else
-            LAST=""
+    - name: Read last saved hash
+      id: last
+      env:
+        STATE_FILE: .watch_state/${{ matrix.watch.id }}.sha256
+      run: |
+        set -euo pipefail
+        if [ -f "$STATE_FILE" ]; then
+          LAST="$(cat "$STATE_FILE")"
+        else
+          LAST=""
+        fi
+        echo "last=$LAST" >> "$GITHUB_OUTPUT"
+        echo "state_file=$STATE_FILE" >> "$GITHUB_OUTPUT"
+
+    - name: Notify + update state if changed
+      if: steps.upstream.outputs.hash != steps.last.outputs.last
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        NEW_HASH: ${{ steps.upstream.outputs.hash }}
+        RAW_URL: ${{ steps.upstream.outputs.raw_url }}
+        REPO: ${{ matrix.watch.repo }}
+        BRANCH: ${{ matrix.watch.branch }}
+        FILE_PATH: ${{ matrix.watch.path }}
+        STATE_FILE: ${{ steps.last.outputs.state_file }}
+      run: |
+        set -euo pipefail
+
+        mkdir -p .watch_state
+        echo "$NEW_HASH" > "$STATE_FILE"
+
+        FILE_UI_URL="https://github.com/${REPO}/blob/${BRANCH}/${FILE_PATH}"
+
+        payload=$(cat <<EOF
+        {
+          "text": "🔔 File changed\n• Repo: ${REPO}\n• File: ${FILE_PATH}\n• Branch: ${BRANCH}\n• Link: ${FILE_UI_URL}\n• Raw: ${RAW_URL}\n• New SHA256: ${NEW_HASH}"
+        }
+        EOF
+        )
+        curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
+
+        git config user.name "repo-watch-bot"
+        git config user.email "repo-watch-bot@users.noreply.github.com"
+
+        git add -f "$STATE_FILE"
+        git commit -m "Update watch state: ${REPO}/${FILE_PATH}" || exit 0
+
+        # Retry push to handle matrix race conditions
+        for i in 1 2 3 4 5; do
+          git pull --rebase origin main || true
+          if git push; then
+            echo "Push succeeded on attempt $i"
+            break
           fi
-          echo "last=$LAST" >> "$GITHUB_OUTPUT"
-          echo "state_file=$STATE_FILE" >> "$GITHUB_OUTPUT"
-
-      - name: Notify + update state if changed
-        if: steps.upstream.outputs.hash != steps.last.outputs.last
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          NEW_HASH: ${{ steps.upstream.outputs.hash }}
-          RAW_URL: ${{ steps.upstream.outputs.raw_url }}
-          REPO: ${{ matrix.watch.repo }}
-          BRANCH: ${{ matrix.watch.branch }}
-          FILE_PATH: ${{ matrix.watch.path }}
-          STATE_FILE: ${{ steps.last.outputs.state_file }}
-        run: |
-          set -euo pipefail
-
-          mkdir -p .watch_state
-          echo "$NEW_HASH" > "$STATE_FILE"
-
-          FILE_UI_URL="https://github.com/${REPO}/blob/${BRANCH}/${FILE_PATH}"
-
-          payload=$(cat <<EOF
-          {
-            "text": "🔔 File changed\n• Repo: ${REPO}\n• File: ${FILE_PATH}\n• Branch: ${BRANCH}\n• Link: ${FILE_UI_URL}\n• Raw: ${RAW_URL}\n• New SHA256: ${NEW_HASH}"
-          }
-          EOF
-          )
-          curl -X POST -H 'Content-type: application/json' --data "$payload" "$SLACK_WEBHOOK_URL"
-
-          git config user.name "repo-watch-bot"
-          git config user.email "repo-watch-bot@users.noreply.github.com"
-
-          git add -f "$STATE_FILE"
-          git commit -m "Update watch state: ${REPO}/${FILE_PATH}" || exit 0
-
-          # Retry push to handle matrix race conditions
-          for i in 1 2 3 4 5; do
-            git pull --rebase origin main || true
-            if git push; then
-              echo "Push succeeded on attempt $i"
-              break
-            fi
-            echo "Push failed on attempt $i; retrying..."
-            sleep $((i * 2))
-          done
+          echo "Push failed on attempt $i; retrying..."
+          sleep $((i * 2))
+        done
