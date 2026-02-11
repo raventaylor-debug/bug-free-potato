@@ -1,4 +1,4 @@
-name: Watch Gitleaks and TruffleHog Files Referenced in #dlp-secret-scanning
+name: Watch Gitleaks and TruffleHog Files #referenced in dlp-secret-scanning
 
 on:
   workflow_dispatch: {} # Allow manual triggering from the Github Actions tab
@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest 
 
     strategy:
-      fail-fast: false
+      fail-fast: false # Don't cancel other runs if one fails, since we want to check all files even if one has an issue
       matrix:
         watch:
-          # --- Your test repo file ---
+          # --- test repo file ---
           - id: bug_free_potato_readme
             repo: raventaylor-debug/bug-free-potato
             branch: main
@@ -117,8 +117,6 @@ jobs:
     steps:
       - name: Checkout watcher repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Fetch upstream file + hash it
         id: upstream
