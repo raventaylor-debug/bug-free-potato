@@ -1,117 +1,31 @@
-name: Watch upstream files
+name: Slack notify (webhook)
 
 on:
-  workflow_dispatch:
-
   push:
-    branches:
-      - main
-
-  schedule:
-    - cron: "17 */6 * * *"  # every 6 hours
-
-permissions:
-  contents: write
+    branches: [ main ]
+  workflow_dispatch: {}
 
 jobs:
-  watch:
+  notify:
     runs-on: ubuntu-latest
-
-    env:
-      STATE_FILE: watch_state.json
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Ensure state file exists
-        run: |
-          if [ ! -f "$STATE_FILE" ]; then
-            echo "{}" > "$STATE_FILE"
-          fi
-
-      - name: Check watched files
-        id: scan
+      - name: Post to Slack
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          REF: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
         run: |
           set -euo pipefail
 
-          changed_any=false
-          cp "$STATE_FILE" state.tmp.json
+          text="Push to *${REPO}* on *${REF}* by *${ACTOR}*.\n• Commit: ${COMMIT_URL}\n• Run: ${RUN_URL}"
 
-          targets='[
-            {
-              "id": "trufflehog_stripe",
-              "repo": "trufflesecurity/trufflehog",
-              "branch": "main",
-              "path": "pkg/detectors/stripe/stripe.go"
-            },
-            {
-              "id": "trufflehog_github",
-              "repo": "trufflesecurity/trufflehog",
-              "branch": "main",
-              "path": "pkg/detectors/github/v2/github.go"
-            }
-          ]'
+          payload="$(jq -n --arg text "$text" '{text: $text}')"
 
-          summary=""
-
-          echo "$targets" | jq -c '.[]' | while read target; do
-            id=$(echo "$target" | jq -r '.id')
-            repo=$(echo "$target" | jq -r '.repo')
-            branch=$(echo "$target" | jq -r '.branch')
-            path=$(echo "$target" | jq -r '.path')
-
-            raw_url="https://raw.githubusercontent.com/$repo/$branch/$path"
-            key="$id"
-
-            echo "Checking $repo:$path"
-
-            tmpfile=$(mktemp)
-            if ! curl -fsSL "$raw_url" -o "$tmpfile"; then
-              echo "Failed to fetch $raw_url"
-              continue
-            fi
-
-            new_hash=$(sha256sum "$tmpfile" | awk '{print $1}')
-            old_hash=$(jq -r --arg k "$key" '.[$k] // ""' state.tmp.json)
-
-            if [ "$new_hash" != "$old_hash" ]; then
-              changed_any=true
-              jq --arg k "$key" --arg v "$new_hash" '.[$k]=$v' state.tmp.json > state.new.json
-              mv state.new.json state.tmp.json
-
-              summary="$summary\n• *$repo* \`$path\` changed\n  <$raw_url|view raw>"
-              echo "Changed: $id"
-            else
-              echo "No change: $id"
-            fi
-
-            rm "$tmpfile"
-          done
-
-          if [ "$changed_any" = true ]; then
-            mv state.tmp.json "$STATE_FILE"
-
-            if [ -n "${SLACK_WEBHOOK_URL:-}" ]; then
-              payload=$(jq -n --arg text "*Upstream file changes detected:*$summary" '{text:$text}')
-              curl -X POST -H "Content-type: application/json" \
-                --data "$payload" \
-                "$SLACK_WEBHOOK_URL"
-            fi
-
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          else
-            rm state.tmp.json
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Commit state file
-        if: steps.scan.outputs.changed == 'true'
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add "$STATE_FILE"
-          git commit -m "Update upstream watch state" || exit 0
-          git push
+          curl -fsSL -X POST \
+            -H 'Content-type: application/json' \
+            --data "$payload" \
+            "$SLACK_WEBHOOK_URL"
