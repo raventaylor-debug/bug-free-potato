@@ -5,27 +5,41 @@ on:
     branches: [ main ]
   workflow_dispatch: {}
 
+name: Slack Subscribe Message
+
+on:
+  workflow_dispatch: {}
+
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Post to Slack
+      - name: Send formatted Slack message
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          REPO: ${{ github.repository }}
-          ACTOR: ${{ github.actor }}
-          REF: ${{ github.ref_name }}
-          SHA: ${{ github.sha }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
         run: |
-          set -euo pipefail
-
-          text="Push to *${REPO}* on *${REF}* by *${ACTOR}*.\n• Commit: ${COMMIT_URL}\n• Run: ${RUN_URL}"
-
-          payload="$(jq -n --arg text "$text" '{text: $text}')"
-
-          curl -fsSL -X POST \
-            -H 'Content-type: application/json' \
-            --data "$payload" \
-            "$SLACK_WEBHOOK_URL"
+          curl -X POST "$SLACK_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": ":white_check_mark: Subscribed to <https://github.com/raventaylor-debug/bug-free-potato|raventaylor-debug/bug-free-potato>. This channel will receive notifications for `issues`, `pulls`, `commits`, `releases`, `deployments`",
+              "blocks": [
+                {
+                  "type": "section",
+                  "block_id": "subscription_section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":white_check_mark: Subscribed to <https://github.com/raventaylor-debug/bug-free-potato|raventaylor-debug/bug-free-potato>. This channel will receive notifications for\n`issues`, `pulls`, `commits`, `releases`, `deployments`"
+                  }
+                },
+                {
+                  "type": "context",
+                  "block_id": "learn_more_context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "<https://github.com/integrations/slack#configuration|Learn More>"
+                    }
+                  ]
+                }
+              ]
+            }'
