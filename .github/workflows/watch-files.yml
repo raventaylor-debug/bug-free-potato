@@ -33,7 +33,7 @@ jobs:
       - name: Check watched files
         id: scan
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: https://hooks.slack.com/triggers/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
         run: |
           set -euo pipefail
 
