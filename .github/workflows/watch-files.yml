@@ -20,9 +20,7 @@ jobs:
               "blocks": [
                 {
                   "type": "section",
-                  "block_id": "subscription_section",
-                  "text": {
-                    "type": "mrkdwn",
+
                     "text": ":white_check_mark: Subscribed to <https://github.com/raventaylor-debug/bug-free-potato|raventaylor-debug/bug-free-potato>. This channel will receive notifications for\n`issues`, `pulls`, `commits`, `releases`, `deployments`"
                   }
                 },
